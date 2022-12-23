@@ -43,6 +43,19 @@ export class DomainList implements IDomainList {
             created_at: dayjs((obj.created_at as Timestamp).toDate()),
         });
     }
+
+    static toDto(domainList: IDomainList): IDomainList {
+
+        const list = new DomainList(domainList);
+
+        return {
+            uuid: list.uuid,
+            title: list.title,
+            icon: list.icon,
+            todos: list.todos,
+            created_at: list.created_at
+        }
+    }
 }
 
 /**

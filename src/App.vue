@@ -4,8 +4,10 @@ import { generateRandomUUID } from "./utils/helpers";
 import { Unsubscribe } from "firebase/firestore";
 import { TodoListViewModel } from "./todo-list/view/viewmodel/todo-list.view-model";
 import { onMounted, onUnmounted, ref } from "vue";
+import { container } from "./core/di";
+import { tokens } from "./core/tokens";
 
-const vm = ref(new TodoListViewModel());
+const vm = ref(container.get(tokens.todoListViewModel));
 
 onMounted(async () => {
     await vm.value.init();

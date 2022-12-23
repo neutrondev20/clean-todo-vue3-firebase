@@ -1,11 +1,21 @@
-import { FirestoreService, firebaseApp } from './../utils/firebase';
-import { FirebaseTodoRepositoryImpl } from '../todo-list/repository/firebase/todo-list.firebase';
+import { FirestoreService } from './../utils/firebase';
 import { Container } from "brandi"
-import { tokens } from "../domain/tokens"
+import { tokens } from "./tokens"
+import { FirebaseTodoRepositoryImpl } from '../todo-list/repository/firebase/todo-list.firebase';
+import { TodoListViewModel } from '../todo-list/view/viewmodel/todo-list.view-model';
 
 
 export const container = new Container
 
 container.bind(tokens.firestoreService)
-    .toFactory(FirestoreService, (instance, firebaseApp) => instance.init(firebaseApp))
+    .toInstance(FirestoreService)
+    .inSingletonScope();
+
+container.bind(tokens.todoListRepository)
+    .toInstance(FirebaseTodoRepositoryImpl)
+    .inSingletonScope();
+
+container.bind(tokens.todoListViewModel)
+    .toInstance(TodoListViewModel)
+    .inTransientScope();
 

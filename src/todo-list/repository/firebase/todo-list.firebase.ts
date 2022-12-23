@@ -1,34 +1,32 @@
-import { Factory } from 'brandi';
-import { FirestoreService } from './../../../utils/firebase';
 import { DomainList, IDomainList } from "../../../domain/list.domain";
 import { ListRepository } from "../../../domain/list.domain";
 import {
-    Firestore,
-    getDocs,
     collection,
     onSnapshot,
-    enableIndexedDbPersistence,
-    Unsubscribe
+    setDoc,
+    doc,
+    updateDoc
 } from "firebase/firestore";
 import { Observable } from "rxjs/internal/observable"
-import { container } from "../../../core/di";
-import { tokens } from "../../../domain/tokens";
-import { firebaseApp } from "../../../utils/firebase";
-import { FirebaseApp } from 'firebase/app';
+import { tokens } from "../../../core/tokens";
+import { FirestoreService } from "../../../utils/firebase";
+import { injected } from "brandi";
+
+
 
 export class FirebaseTodoRepositoryImpl implements ListRepository {
-    db!: Firestore;
 
-    constructor() {
-        const dbFactory = container.get(tokens.firestoreService);
-        const firestoreService = dbFactory(firebaseApp);
-        this.db = firestoreService.db;
+    firestoreService: FirestoreService;
+
+    constructor(firestoreService: FirestoreService) {
+        this.firestoreService = firestoreService;
+        this.firestoreService.enableDbPersistence();
     }
 
     getLists(): Observable<Map<string, DomainList>> {
         return new Observable(subscribe => {
-            const unsubscribe = onSnapshot(
-                collection(this.db, "lists"),
+            return onSnapshot(
+                collection(this.firestoreService.db, "lists"),
                 (querySnapshot) => {
                     const todo_lists = new Map<string, DomainList>();
                     querySnapshot.forEach((doc) => {
@@ -36,21 +34,40 @@ export class FirebaseTodoRepositoryImpl implements ListRepository {
                     });
                     subscribe.next(todo_lists)
                 },
+                // Error
                 (error) => {
-                    console.log(error)
+                    subscribe.error(error);
                 },
-                () => console.log("Unsubscribed from lists collection")
+                // Complete
+                () => subscribe.complete()
             )
-            return unsubscribe
         })
     }
+
     async getList(id: string): Promise<DomainList> {
         throw new Error("Method not implemented.");
     }
+
     async upsertList(list: IDomainList): Promise<DomainList> {
-        throw new Error("Method not implemented.");
+
+        const reference = collection(this.firestoreService.db, "lists")
+
+        const document = doc(reference, list.uuid);
+
+        console.log(DomainList.toDto(list))
+
+        await setDoc(document, {
+            ...DomainList.toDto(list),
+            todos: [],
+            created_at: new Date()
+        })
+
+        return new DomainList(list);
     }
+
     async deleteList(id: string): Promise<void> {
         throw new Error("Method not implemented.");
     }
 }
+
+injected(FirebaseTodoRepositoryImpl, tokens.firestoreService)
