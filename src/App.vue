@@ -92,15 +92,18 @@ onUnmounted(() => {
                     </div>
                 </div>
                 <div class="w-full non-empty" v-else>
-                    <div class="text-2xl font-bold p-4">
+                    <div class="flex justify-between text-2xl font-bold p-4">
                         <span>{{ vm.current_list.title }}</span>
+                        <button @click="vm.deleteList(vm.current_list!.uuid)">
+                            Delete
+                        </button>
                     </div>
                     <div
                         class="w-full border-t border-gray-300 p-4 first:border-t-0 bg-white"
                         v-for="[id, todo] in vm.todos"
                         :key="id"
                     >
-                        <div class="flex flex-row">
+                        <div class="flex flex-row w-full">
                             <div
                                 class="w-6 h-6 mr-2 border-gray-300 shadow-sm relative transition-colors"
                                 :class="
@@ -120,13 +123,30 @@ onUnmounted(() => {
                                     ></i>
                                 </Transition>
                             </div>
-                            <div class="flex flex-col">
-                                <span>{{ todo.title }}</span>
-                                <span class="text-gray-600 text-sm">
-                                    {{
-                                        todo.created_at.format("MMMM DD, YYYY")
-                                    }}
-                                </span>
+                            <div class="w-full flex justify-between">
+                                <div class="flex flex-col">
+                                    <span>{{ todo.title }}</span>
+                                    <span class="text-gray-600 text-sm">
+                                        {{
+                                            todo.created_at.format(
+                                                "MMMM DD, YYYY"
+                                            )
+                                        }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <button
+                                        @click="
+                                            vm.todos!.delete(id);
+                                            vm.upsertNewList({
+                                                ...vm.current_list!,
+                                                todos: vm.todos,
+                                            });
+                                        "
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

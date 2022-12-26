@@ -1,3 +1,4 @@
+import { FirestoreServiceOffline } from './../../../utils/firebase';
 import { DomainList, IDomainList } from "../../../domain/list.domain";
 import { ListRepository } from "../../../domain/list.domain";
 import {
@@ -5,22 +6,18 @@ import {
     onSnapshot,
     setDoc,
     doc,
-    updateDoc
+    deleteDoc
 } from "firebase/firestore";
 import { Observable } from "rxjs/internal/observable"
 import { tokens } from "../../../core/tokens";
-import { FirestoreService } from "../../../utils/firebase";
 import { injected } from "brandi";
-
-
 
 export class FirebaseTodoRepositoryImpl implements ListRepository {
 
-    firestoreService: FirestoreService;
+    firestoreService: FirestoreServiceOffline;
 
-    constructor(firestoreService: FirestoreService) {
+    constructor(firestoreService: FirestoreServiceOffline) {
         this.firestoreService = firestoreService;
-        this.firestoreService.enableDbPersistence();
     }
 
     getLists(): Observable<Map<string, DomainList>> {
@@ -54,20 +51,21 @@ export class FirebaseTodoRepositoryImpl implements ListRepository {
 
         const document = doc(reference, list.uuid);
 
-        console.log(DomainList.toDto(list))
-
         await setDoc(document, {
             ...DomainList.toDto(list),
-            todos: [],
-            created_at: new Date()
         })
 
         return new DomainList(list);
     }
 
     async deleteList(id: string): Promise<void> {
-        throw new Error("Method not implemented.");
+
+        const reference = collection(this.firestoreService.db, "lists")
+
+        const document = doc(reference, id);
+
+        await deleteDoc(document);
     }
 }
 
-injected(FirebaseTodoRepositoryImpl, tokens.firestoreService)
+injected(FirebaseTodoRepositoryImpl, tokens.firestoreOfflineService)

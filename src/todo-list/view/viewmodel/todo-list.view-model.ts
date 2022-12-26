@@ -32,9 +32,9 @@ export class TodoListViewModel {
         return this.current_list?.todos;
     }
 
-    deleteList(id: string): void {
+    async deleteList(id: string) {
 
-        throw new Error("Method not implemented.");
+        await this.repository.deleteList(id);
     }
 
     deleteTodo(id: string): void {
@@ -64,7 +64,12 @@ export class TodoListViewModel {
             return;
         }
 
-        // this.repository.upsertList(todo);
+        this.repository.upsertList({
+            ...this.current_list,
+            todos: this.current_list.todos.set(todo.uuid, DomainTodo.createFromObject((todo)))
+        });
+
+        this.new_todo = ""
     }
 
     upsertNewList(list: IDomainList) {

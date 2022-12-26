@@ -44,7 +44,7 @@ export class DomainList implements IDomainList {
         });
     }
 
-    static toDto(domainList: IDomainList): IDomainList {
+    static toDto(domainList: IDomainList) {
 
         const list = new DomainList(domainList);
 
@@ -52,8 +52,13 @@ export class DomainList implements IDomainList {
             uuid: list.uuid,
             title: list.title,
             icon: list.icon,
-            todos: list.todos,
-            created_at: list.created_at
+            todos: Array.from(list.todos, todo => ({
+                uuid: todo[1].uuid,
+                title: todo[1].title,
+                completed: todo[1].completed,
+                created_at: new Date(todo[1].created_at.toDate())
+            })),
+            created_at: new Date(list.created_at.toDate())
         }
     }
 }

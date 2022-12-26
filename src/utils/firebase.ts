@@ -11,34 +11,25 @@ const firebaseConfig = {
     appId: "1:886483750167:web:be54c0d0c9faff1f443b52"
 };
 
-export const firebaseApp = initializeApp(firebaseConfig)
-
-export class FirestoreService {
-
+export class FirestoreServiceOnline {
     db: Firestore;
 
     constructor() {
-        this.db = markRaw(initializeFirestore(firebaseApp, {
+        const app = initializeApp(firebaseConfig, "online-only")
+        this.db = markRaw(initializeFirestore(app, {
             cacheSizeBytes: CACHE_SIZE_UNLIMITED
         }))
     }
+}
 
-    enableDbPersistence() {
+export class FirestoreServiceOffline {
+    db: Firestore;
 
+    constructor() {
+        const app = initializeApp(firebaseConfig)
+        this.db = markRaw(initializeFirestore(app, {
+            cacheSizeBytes: CACHE_SIZE_UNLIMITED
+        }))
         enableIndexedDbPersistence(this.db)
-            .catch((err) => {
-
-                console.log(err)
-
-                if (err.code == 'failed-precondition') {
-                    // Multiple tabs open, persistence can only be enabled
-                    // in one tab at a a time.
-                    // ...
-                } else if (err.code == 'unimplemented') {
-                    // The current browser does not support all of the
-                    // features required to enable persistence
-                    // ...
-                }
-            });
     }
 }
